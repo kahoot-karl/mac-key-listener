@@ -5,6 +5,7 @@ export class KeyListener {
   private childProcess: ReturnType<typeof spawn>;
   private pressedKeys: Record<string, true> = {};
   private buffer: string = "";
+  private isAlive: boolean = true;
 
   constructor(callback: (pressedKeys: Record<string, true>) => void) {
     const globalKeyListenerPath = path.join(__dirname, "../GlobalKeyListener");
@@ -28,6 +29,9 @@ export class KeyListener {
     });
 
     this.childProcess.on("exit", (code, signal) => {
+      if (!this.isAlive) {
+        return;
+      }
       console.error(`Process exited with code: ${code}, signal: ${signal}`);
       process.exit(code);
     });
@@ -59,6 +63,7 @@ export class KeyListener {
   }
 
   stopListening() {
+    this.isAlive = false;
     if (this.childProcess) {
       this.childProcess.kill();
     }

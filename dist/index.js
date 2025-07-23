@@ -11,6 +11,7 @@ class KeyListener {
         var _a, _b;
         this.pressedKeys = {};
         this.buffer = "";
+        this.isAlive = true;
         const globalKeyListenerPath = path_1.default.join(__dirname, "../GlobalKeyListener");
         console.log("Starting key listener at:", globalKeyListenerPath);
         this.childProcess = (0, child_process_1.spawn)("script", ["-q", "/dev/null", globalKeyListenerPath], {
@@ -25,6 +26,9 @@ class KeyListener {
             process.exit(1);
         });
         this.childProcess.on("exit", (code, signal) => {
+            if (!this.isAlive) {
+                return;
+            }
             console.error(`Process exited with code: ${code}, signal: ${signal}`);
             process.exit(code);
         });
@@ -54,6 +58,7 @@ class KeyListener {
         });
     }
     stopListening() {
+        this.isAlive = false;
         if (this.childProcess) {
             this.childProcess.kill();
         }
