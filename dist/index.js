@@ -22,6 +22,9 @@ class KeyListener {
             process.exit(1);
         });
         this.childProcess.on("close", (code, signal) => {
+            if (!this.isAlive) {
+                return;
+            }
             console.error(`Process closed with code: ${code}, signal: ${signal}`);
             process.exit(1);
         });
