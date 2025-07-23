@@ -29,7 +29,10 @@ class KeyListener {
         });
         (_a = this.childProcess.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
             const output = data.toString();
-            const [event, key] = output.trim().split(": ");
+            const [event, key] = output
+                .trim()
+                .split(": ")
+                .map((component) => component.trim());
             if (!key) {
                 console.log(output);
             }

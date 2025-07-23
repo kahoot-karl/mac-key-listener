@@ -33,7 +33,10 @@ export class KeyListener {
 
     this.childProcess.stdout?.on("data", (data) => {
       const output = data.toString();
-      const [event, key] = output.trim().split(": ");
+      const [event, key] = output
+        .trim()
+        .split(": ")
+        .map((component: string) => component.trim());
       if (!key) {
         console.log(output);
       }
