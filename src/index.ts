@@ -40,6 +40,9 @@ export class KeyListener {
     });
 
     this.childProcess.stdout?.on("data", (data) => {
+      if (!this.isAlive) {
+        return;
+      }
       const output = this.buffer + data.toString();
       for (const line of output.split("\n")) {
         const [event, key] = line
