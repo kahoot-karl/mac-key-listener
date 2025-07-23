@@ -1,6 +1,6 @@
 {
   "name": "mac-key-listener",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A macos key listener for node",
   "main": "dist/index.js",
   "types": "types/index.d.ts",

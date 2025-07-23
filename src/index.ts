@@ -4,6 +4,7 @@ import path from "path";
 export class KeyListener {
   private childProcess: ReturnType<typeof spawn>;
   private pressedKeys: Record<string, true> = {};
+  private buffer: string = "";
 
   constructor(callback: (pressedKeys: Record<string, true>) => void) {
     const globalKeyListenerPath = path.join(__dirname, "../GlobalKeyListener");
@@ -17,39 +18,43 @@ export class KeyListener {
     );
 
     this.childProcess.on("error", (error) => {
-      console.log("Failed to start process:", error);
+      console.error("Failed to start process:", error);
       process.exit(1);
     });
 
     this.childProcess.on("close", (code, signal) => {
-      console.log(`Process closed with code: ${code}, signal: ${signal}`);
+      console.error(`Process closed with code: ${code}, signal: ${signal}`);
       process.exit(1);
     });
 
     this.childProcess.on("exit", (code, signal) => {
-      console.log(`Process exited with code: ${code}, signal: ${signal}`);
+      console.error(`Process exited with code: ${code}, signal: ${signal}`);
       process.exit(code);
     });
 
     this.childProcess.stdout?.on("data", (data) => {
-      const output = data.toString();
-      const [event, key] = output
-        .trim()
-        .split(": ")
-        .map((component: string) => component.trim());
-      if (!key) {
-        console.log(output);
+      const output = this.buffer + data.toString();
+      for (const line of output.split("\n")) {
+        const [event, key] = line
+          .trim()
+          .split(": ")
+          .map((component: string) => component.trim());
+        if (!key) {
+          this.buffer = line;
+          return; // Continue to accumulate data until we have a complete line
+        }
+        if (event === "down") {
+          this.pressedKeys[key] = true;
+        } else if (event === "up") {
+          delete this.pressedKeys[key];
+        }
+        callback(this.pressedKeys);
       }
-      if (event === "down") {
-        this.pressedKeys[key] = true;
-      } else if (event === "up") {
-        delete this.pressedKeys[key];
-      }
-      callback(this.pressedKeys);
+      this.buffer = ""; // Reset buffer after processing
     });
 
     this.childProcess.stderr?.on("data", (data) => {
-      console.log(`Error: ${data.toString()}`);
+      console.error(`Error: ${data.toString()}`);
     });
   }
 
